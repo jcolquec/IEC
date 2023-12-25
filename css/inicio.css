@@ -1,0 +1,39 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
+
+/* Estilos para el contenedor del menú */
+
+#menu-container {
+    background-color: #3498db; /* Color azul */
+    text-align: center; /* Centrado horizontal */
+    padding: 10px 0; /* Espacio alrededor del menú */
+    width: 100%;
+    margin: 0 auto; /* Centrado horizontal */
+}
+
+/* Estilos para los elementos de lista del menú */
+#menu-container ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#menu-container ul li {
+    display: inline;
+    margin-right: 20px; /* Espacio entre elementos del menú */
+}
+
+#menu-container ul li a {
+    text-decoration: none;
+    color: #fff; /* Color del texto en blanco */
+    padding: 10px 15px; /* Espacio alrededor del texto */
+    transition: background-color 0.3s ease; /* Transición suave */
+}
+
+#menu-container ul li a:hover {
+    background-color: #2980b9; /* Color de fondo al pasar el ratón */
+    color: #fff; /* Color del texto en blanco */
+}

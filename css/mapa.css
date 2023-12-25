@@ -1,0 +1,64 @@
+#map {
+    height: 580px;
+    width: 100%;
+}
+
+h1 {
+    background-color: #3498db; /* Color azul */
+    text-align: center;
+    color: #fff;
+    padding: 15px 0;
+}
+
+table {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #333;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background-color: #ddd;
+}
+
+td {
+    background-color: #fff;
+}
+
+p.no-detalles {
+    text-align: center;
+    font-style: italic;
+    color: #777;
+}
+
+/* Estilo para el select */
+.styled-select {
+    display: block;
+    width: 50%;
+    padding: 0.5em;
+    font-size: 15px;
+    line-height: 1.4;
+    color: #fff;
+    background-color: #3498db;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    position: fixed;
+    top: 170px;  /* Ajusta la posición desde la parte superior según tus necesidades */
+    left:0px; /* Ajusta la posición desde la izquierda según tus necesidades */
+    z-index: 500; /* Asegura que el select esté por encima del mapa */
+}
+
+/* Estilo para las opciones del select */
+.styled-select option {
+    background-color: #fff;
+    color: #555;
+}

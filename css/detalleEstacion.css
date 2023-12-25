@@ -1,0 +1,65 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+#menu-container {
+    background-color: #3498db; /* Color azul */
+    text-align: center; /* Centrado horizontal */
+    padding: 10px 0; /* Espacio alrededor del menú */
+    width: 100%;
+    margin: 0 auto; /* Centrado horizontal */
+}
+
+/* Estilos para los elementos de lista del menú */
+#menu-container ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#menu-container ul li {
+    display: inline;
+    margin-right: 20px; /* Espacio entre elementos del menú */
+}
+
+#menu-container ul li a {
+    text-decoration: none;
+    color: #fff; /* Color del texto en blanco */
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+table {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #333;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background-color: #ddd;
+}
+
+td {
+    background-color: #fff;
+}
+
+p.no-detalles {
+    text-align: center;
+    font-style: italic;
+    color: #777;
+}
