@@ -17,12 +17,12 @@
             <li><a href="index.php?c=usuario&a=login">Iniciar Sesión</a></li>
         </ul>
     </div>
-    <h1>Estaciones Meteorologicas</h1>
+    <h1>Estaciones Meteorológicas</h1>
     <table>
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Nombre Estacion</th>
+                <th>Nombre Estación</th>
                 <th>Pais</th>
                 <th></th>
                 <!-- Agrega más columnas según tus necesidades -->

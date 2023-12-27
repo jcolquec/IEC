@@ -16,28 +16,23 @@ class datosController {
         // Aquí, cargarás la vista principal que incluye el menú.
         include('../view/datosView.php');
     }
-    public function subirArchivoCSV($archivo) {
+    public function subirArchivoCSV() {
+        session_start();
+
+        $idOrgResp = $_SESSION['IDORGRESP'];
+        $idPersona = $_SESSION['IDPERSONA'];
+        
         // Verificar si se ha subido un archivo
-        if (isset($archivo['tmp_name']) && !empty($archivo['tmp_name'])) {
+        if (isset($_FILES['archivo']['tmp_name']) && !empty($_FILES['archivo']['tmp_name'])) {
             // Obtener la ruta temporal del archivo
-            $rutaTemporal = $archivo['tmp_name'];
-
+            $rutaTemporal = $_FILES['archivo']['tmp_name'];
+            
             // Verificar si es un archivo CSV
-            if (pathinfo($archivo['name'], PATHINFO_EXTENSION) === 'csv') {
-                // Generar un nombre de archivo único
-                $nombreArchivo = pathinfo($archivo['name'], PATHINFO_FILENAME);
-                $extensionArchivo = pathinfo($archivo['name'], PATHINFO_EXTENSION);
-                $nombreArchivoUnico = $nombreArchivo . '_' . time() . '.' . $extensionArchivo;
-
-                // Mover el archivo a la ubicación deseada
-                $rutaDestino = '../datasets/' . $nombreArchivoUnico;
-                if (!move_uploaded_file($rutaTemporal, $rutaDestino)) {
-                    return 'Error al mover el archivo subido.';
-                }
-
+            if (pathinfo($_FILES['archivo']['name'], PATHINFO_EXTENSION) === 'csv') { 
                 // Procesar el archivo CSV
-                $datos = $this->mode->procesarArchivoCSV($rutaDestino);
-
+                $datos = $this->model->procesarArchivoCSV($rutaTemporal);
+                // Obtener la idEstacion
+                //$idEstacion = $this->model->obtenerIdEstacion($idPersona, $idOrgResp);
                 // Guardar los datos en la base de datos utilizando el modelo
                 $this->model->guardarDatos($datos);
 

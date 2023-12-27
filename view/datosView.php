@@ -26,7 +26,21 @@
     </form>
 
     <form id="form-subir-datos" action="../public/index.php?c=datos&a=subirArchivoCSV" method="post" enctype="multipart/form-data">
-        <h2>Subir datos de temperatura</h2>
+        <h2>Subir datos de Temperatura Media</h2>
+        <label for="archivo">Selecciona un archivo CSV:</label>
+        <input type="file" id="archivo" name="archivo" accept=".csv">
+        <input type="submit" value="Subir archivo" name="submit">
+    </form>
+
+    <form id="form-subir-datos" action="../public/index.php?c=datos&a=subirArchivoCSV" method="post" enctype="multipart/form-data">
+        <h2>Subir datos de Temperatura Máxima</h2>
+        <label for="archivo">Selecciona un archivo CSV:</label>
+        <input type="file" id="archivo" name="archivo" accept=".csv">
+        <input type="submit" value="Subir archivo" name="submit">
+    </form>
+
+    <form id="form-subir-datos" action="../public/index.php?c=datos&a=subirArchivoCSV" method="post" enctype="multipart/form-data">
+        <h2>Subir datos de Temperatura Mínima</h2>
         <label for="archivo">Selecciona un archivo CSV:</label>
         <input type="file" id="archivo" name="archivo" accept=".csv">
         <input type="submit" value="Subir archivo" name="submit">
