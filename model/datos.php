@@ -8,7 +8,7 @@ class datos {
         $this->db = $database->getDB();
     }
 
-    public function procesarArchivoCSV($rutaArchivo) {
+    public function procesarArchivoCSVDiario($rutaArchivo, $tipoVariable) {
         
         // Aquí puedes implementar la lógica para procesar el archivo CSV
         // Por ejemplo, podrías abrir el archivo, leer cada línea, y guardar cada línea en un array
@@ -19,7 +19,6 @@ class datos {
 
             // Leer la primera línea para obtener las cabeceras
             $cabeceras = fgetcsv($file, 0, ';');
-            var_dump($cabeceras);
             // Determinar el tipo de archivo basándose en las cabeceras
             if (in_array('precipitacion', $cabeceras)) {
                 
@@ -56,36 +55,39 @@ class datos {
                 // Leer cada línea del archivo
                 while (($data = fgetcsv($file)) !== false) {
             
-                    if ($firstLine) {
-                        $firstLine = false;
-                        continue;
-                    }
-            
-                    // Obtener cada dato por separado
-                    // Obtener la fecha
-                    $fecha = $data[0] . '-' . str_pad($data[1], 2, '0', STR_PAD_LEFT) . '-' . str_pad($data[2], 2, '0', STR_PAD_LEFT);
+                    $fecha = $data[0] ;
                     
-                    $dato4 = $data[3];
-                    $dato5 = $data[4];
-                    $dato6 = $data[5];
+                    $precipitacion = $data[1];
+                    $temperatura_maxima = $data[2];
+                    $temperatura_minima = $data[3];
                     
                     $datos[] = [
                         'fecha' => $fecha,
-                        'precipitacion' => $dato4,
-                        'temperatura_maxima' => $dato5,
-                        'temperatura_minima' => $dato6
+                        'precipitacion' => $precipitacion,
+                        'temperatura_maxima' => $temperatura_maxima,
+                        'temperatura_minima' => $temperatura_minima
                     ];
-                    // Imprimir los datos
-                    echo "Fecha: $fecha<br>";
-                    echo "Precipitacion: $dato4<br>";
-                    echo "Temperatura Maxima: $dato5<br>";
-                    echo "Temperatura Minima: $dato6<br>";
-                    echo "<br>";
                 }
             
             }
         
-            var_dump($datos);
+            usort($datos, function ($a, $b) {
+                return strtotime($a['fecha']) - strtotime($b['fecha']);
+            });
+
+            // Recorrer todas las fechas en el array
+            for ($i = 0; $i < count($datos) - 1; $i++) {
+                // Obtener la fecha actual y la siguiente
+                $fechaActual = new DateTime($datos[$i]['fecha']);
+                $fechaSiguiente = new DateTime($datos[$i + 1]['fecha']);
+
+                // Verificar si la fecha siguiente es el día siguiente
+                $fechaActual->modify('+1 day');
+                if ($fechaActual != $fechaSiguiente) {
+                    // Si no lo es, insertar una nueva entrada en el array
+                    array_splice($datos, $i + 1, 0, [['fecha' => $fechaActual->format('Y-m-d'), 'precipitacion' => '-99']]);
+                }
+            }
             // Cerrar el archivo
             fclose($file);
         } else {
@@ -95,16 +97,89 @@ class datos {
         return $datos;
     }
 
-    public function obtenerIdEstacion($idPersona, $idOrgResp) {
-        // Aquí puedes implementar la lógica para obtener la idEstacion
-        // Por ejemplo, podrías consultar la base de datos para obtener la idEstacion
-        $stmt = $this->db->prepare("SELECT IDESTACION FROM estacion 
-        WHERE IDPERSONA = ? AND IDORGRESP = ?");
-        $stmt->bind_param("ss", $idPersona, $idOrgResp);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $idestacion = $result->fetch_assoc();
-        return $idestacion;
+    public function procesarArchivoCSVHorario($rutaArchivo, $tipoVariable){
+        $file = fopen($rutaArchivo, 'r');
+        $datos = [];
+
+        if($file){
+            // Leer la primera línea para obtener las cabeceras
+            $cabeceras = fgetcsv($file, 0, ';');
+            // Determinar el tipo de archivo basándose en las cabeceras
+            if (in_array('precipitacion', $cabeceras)) {
+                
+                // Procesar archivo de precipitación
+                // Leer cada línea del archivo
+                while (($data = fgetcsv($file, 0, ';')) !== false) {
+                    // Obtener cada dato por separado
+                    $fecha = $data[0];
+                    $precipitacion = $data[1];
+                    
+                    $datos[] = [
+                        'fecha' => $fecha,
+                        'precipitacion' => $precipitacion,
+                    ];
+                }
+            } elseif (in_array('temperatura_maxima', $cabeceras) && in_array('temperatura_minima', $cabeceras)) {
+                // Procesar archivo de temperatura
+                // Leer cada línea del archivo
+                while (($data = fgetcsv($file)) !== false) {
+                    // Obtener cada dato por separado
+                    $fecha = $data[0];
+                    $temperatura_maxima = $data[1];
+                    $temperatura_minima = $data[2];
+                    
+                    $datos[] = [
+                        'fecha' => $fecha,
+                        'temperatura_maxima' => $temperatura_maxima,
+                        'temperatura_minima' => $temperatura_minima,
+                    ];
+                }
+            } elseif (in_array('precipitacion', $cabeceras) && in_array('temperatura_maxima', $cabeceras) && in_array('temperatura_minima', $cabeceras)) {
+                // Procesar archivo de temperatura y precipitación
+                $firstLine = true;
+                // Leer cada línea del archivo
+                while (($data = fgetcsv($file)) !== false) {
+            
+                    $fecha = $data[0] ;
+                    
+                    $precipitacion = $data[1];
+                    $temperatura_maxima = $data[2];
+                    $temperatura_minima = $data[3];
+                    
+                    $datos[] = [
+                        'fecha' => $fecha,
+                        'precipitacion' => $precipitacion,
+                        'temperatura_maxima' => $temperatura_maxima,
+                        'temperatura_minima' => $temperatura_minima
+                    ];
+                }
+            
+            }
+        
+            usort($datos, function ($a, $b) {
+                return strtotime($a['fecha']) - strtotime($b['fecha']);
+            });
+
+            // Recorrer todas las fechas en el array
+            for ($i = 0; $i < count($datos) - 1; $i++) {
+                // Obtener la fecha actual y la siguiente
+                $fechaActual = new DateTime($datos[$i]['fecha']);
+                $fechaSiguiente = new DateTime($datos[$i + 1]['fecha']);
+
+                // Verificar si la fecha siguiente es el día siguiente
+                $fechaActual->modify('+1 day');
+                if ($fechaActual != $fechaSiguiente) {
+                    // Si no lo es, insertar una nueva entrada en el array
+                    array_splice($datos, $i + 1, 0, [['fecha' => $fechaActual->format('Y-m-d'), 'precipitacion' => '-99']]);
+                }
+            }
+            // Cerrar el archivo
+            fclose($file);
+        }else{
+            echo 'No se pudo abrir el archivo.';
+        }
+
+        return $datos;
     }
 
     public function guardarDatos($datos) {
@@ -174,6 +249,23 @@ class datos {
 
         // Cerrar la conexión a la base de datos cuando hayas terminado
         $this->db->close();
+    }
+
+    public function getEstacionesOrgResp($idOrgResp) {
+        // Ejecutar la consulta SQL
+        $stmt = $this->db->prepare("SELECT IDESTACION FROM ESTACION WHERE IDORGRESP = ?");
+        $stmt->bind_param("i", $idOrgResp);
+        $stmt->execute();
+        // Obtener los resultados
+        $result = $stmt->get_result();
+
+        $estaciones = array();
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $estaciones[] = $row;
+            }
+        }
+        return $estaciones;
     }
     
 }
