@@ -37,19 +37,32 @@ class datosController {
             // Verificar si es un archivo CSV
             if (pathinfo($_FILES['archivo']['name'], PATHINFO_EXTENSION) === 'csv') { 
                 
-                if($tipoDatos == 'Diario'){
+                if($tipoDatos === 'diario'){
                     // Procesar el archivo CSV
-                    $datos = $this->model->procesarArchivoCSVDiario($rutaTemporal, $tipoVariable);
-                }else if($tipoDatos == 'Horario'){
+                    $datos = $this->model->procesarArchivoCSVDiario($rutaTemporal, $tipoVariable, $estacion);
+                    if ($datos === 'codigo_no_coincide'){
+                        //FALTA HACER EL MODAL DE ERROR
+                        header ("Location: ../public/index.php?c=datos&a=index");
+                    }
+                    //echo var_dump($datos);
+                    $this->model->guardarDatosDiario($datos, $estacion, $tipoVariable);
+                    echo 'Archivo CSV subido y procesado correctamente.';
+                }else if($tipoDatos === 'horario'){
                     // Procesar el archivo CSV
-                    $datos = $this->model->procesarArchivoCSVHorario($rutaTemporal, $tipoVariable);
+                    $datos = $this->model->procesarArchivoCSVHorario($rutaTemporal, $tipoVariable, $estacion);
+                    
+                    if ($datos === 'codigo_no_coincide'){
+                        //FALTA HACER EL MODAL DE ERROR
+                        header ("Location: ../public/index.php?c=datos&a=index");
+                    }
+                    $this->model->guardarDatosHorario($datos, $estacion, $tipoVariable);
+                    echo 'Archivo CSV subido y procesado correctamente.';
                 }   
                 
-                var_dump($datos);
                 // Obtener la idEstacion
                 //$idEstacion = $this->model->obtenerIdEstacion($idPersona, $idOrgResp);
                 //Guardar los datos en la base de datos utilizando el modelo
-                $this->model->guardarDatos($datos, $estacion);
+                //$this->model->guardarDatos($datos, $estacion);
 
                 // Retornar una respuesta exitosa
                 return 'Archivo CSV subido y procesado correctamente.';

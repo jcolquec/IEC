@@ -8,17 +8,34 @@ class datos {
         $this->db = $database->getDB();
     }
 
-    public function procesarArchivoCSVDiario($rutaArchivo, $tipoVariable) {
+    public function procesarArchivoCSVDiario($rutaArchivo, $tipoVariable, $estacionSeleccionada) {
         
         // Aquí puedes implementar la lógica para procesar el archivo CSV
         // Por ejemplo, podrías abrir el archivo, leer cada línea, y guardar cada línea en un array
         $file = fopen($rutaArchivo, 'r');
         $datos = [];
+        
         // Verificar si el archivo se abrió correctamente
         if ($file) {
 
             // Leer la primera línea para obtener las cabeceras
             $cabeceras = fgetcsv($file, 0, ';');
+
+            // Guardar la posición actual del puntero del archivo
+            $posicion = ftell($file);
+
+            // Leer la segunda línea del archivo para obtener el código de la estación
+            $codigo_estacion = fgetcsv($file, 0, ';')[0];
+
+            // Verificar si el código de la estación coincide con el seleccionado en el formulario
+            if ($codigo_estacion != $estacionSeleccionada) {
+                // Si no coincide, puedes mostrar un mensaje de error y detener la ejecución
+                return 'codigo_no_coincide';
+            }
+
+            // Mover el puntero del archivo de vuelta al inicio de la segunda fila
+            fseek($file, $posicion);
+
             // Determinar el tipo de archivo basándose en las cabeceras
             if (in_array('precipitacion', $cabeceras)) {
                 
@@ -26,8 +43,8 @@ class datos {
                 // Leer cada línea del archivo
                 while (($data = fgetcsv($file, 0, ';')) !== false) {
                     // Obtener cada dato por separado
-                    $fecha = $data[0];
-                    $precipitacion = $data[1];
+                    $fecha = $data[1];
+                    $precipitacion = $data[2];
                     
                     $datos[] = [
                         'fecha' => $fecha,
@@ -39,9 +56,9 @@ class datos {
                 // Leer cada línea del archivo
                 while (($data = fgetcsv($file)) !== false) {
                     // Obtener cada dato por separado
-                    $fecha = $data[0];
-                    $temperatura_maxima = $data[1];
-                    $temperatura_minima = $data[2];
+                    $fecha = $data[1];
+                    $temperatura_maxima = $data[2];
+                    $temperatura_minima = $data[3];
                     
                     $datos[] = [
                         'fecha' => $fecha,
@@ -55,11 +72,11 @@ class datos {
                 // Leer cada línea del archivo
                 while (($data = fgetcsv($file)) !== false) {
             
-                    $fecha = $data[0] ;
+                    $fecha = $data[1] ;
                     
-                    $precipitacion = $data[1];
-                    $temperatura_maxima = $data[2];
-                    $temperatura_minima = $data[3];
+                    $precipitacion = $data[2];
+                    $temperatura_maxima = $data[3];
+                    $temperatura_minima = $data[4];
                     
                     $datos[] = [
                         'fecha' => $fecha,
@@ -97,13 +114,28 @@ class datos {
         return $datos;
     }
 
-    public function procesarArchivoCSVHorario($rutaArchivo, $tipoVariable){
+    public function procesarArchivoCSVHorario($rutaArchivo, $tipoVariable, $estacionSeleccionada){
         $file = fopen($rutaArchivo, 'r');
         $datos = [];
 
         if($file){
             // Leer la primera línea para obtener las cabeceras
             $cabeceras = fgetcsv($file, 0, ';');
+
+            // Guardar la posición actual del puntero del archivo
+            $posicion = ftell($file);
+
+            // Leer la segunda línea del archivo para obtener el código de la estación
+            $codigo_estacion = fgetcsv($file, 0, ';')[0];
+
+            // Verificar si el código de la estación coincide con el seleccionado en el formulario
+            if ($codigo_estacion != $estacionSeleccionada) {
+                // Si no coincide, puedes mostrar un mensaje de error y detener la ejecución
+                return 'codigo_no_coincide';
+            }
+
+        // Mover el puntero del archivo de vuelta al inicio de la segunda fila
+        fseek($file, $posicion);
             // Determinar el tipo de archivo basándose en las cabeceras
             if (in_array('precipitacion', $cabeceras)) {
                 
@@ -111,11 +143,13 @@ class datos {
                 // Leer cada línea del archivo
                 while (($data = fgetcsv($file, 0, ';')) !== false) {
                     // Obtener cada dato por separado
-                    $fecha = $data[0];
-                    $precipitacion = $data[1];
+                    $fecha = $data[1];
+                    $hora = $data[2];
+                    $precipitacion = $data[3];
                     
                     $datos[] = [
                         'fecha' => $fecha,
+                        'hora' => $hora,
                         'precipitacion' => $precipitacion,
                     ];
                 }
@@ -157,37 +191,60 @@ class datos {
             }
         
             usort($datos, function ($a, $b) {
-                return strtotime($a['fecha']) - strtotime($b['fecha']);
+                $fechaHoraA = strtotime($a['fecha'] . ' ' . $a['hora']);
+                $fechaHoraB = strtotime($b['fecha'] . ' ' . $b['hora']);
+            
+                return $fechaHoraA - $fechaHoraB;
             });
-
-            // Recorrer todas las fechas en el array
-            for ($i = 0; $i < count($datos) - 1; $i++) {
-                // Obtener la fecha actual y la siguiente
-                $fechaActual = new DateTime($datos[$i]['fecha']);
-                $fechaSiguiente = new DateTime($datos[$i + 1]['fecha']);
-
-                // Verificar si la fecha siguiente es el día siguiente
-                $fechaActual->modify('+1 day');
-                if ($fechaActual != $fechaSiguiente) {
-                    // Si no lo es, insertar una nueva entrada en el array
-                    array_splice($datos, $i + 1, 0, [['fecha' => $fechaActual->format('Y-m-d'), 'precipitacion' => '-99']]);
+                    
+            $cont = 0;
+            $HoraActualArray = new DateTime($datos[0]['hora']);
+            $datosConHorasFaltantes = [];
+            
+            // Crear un array de fechas únicas
+            $fechasUnicas = array_unique(array_column($datos, 'fecha'));
+            
+            foreach ($fechasUnicas as $fechaUnica) {
+                //echo var_dump($dato);
+                $horaInicial = '00:00:00';
+                $horaFinal = '23:00:00';
+                $a = new DateTime($horaInicial);
+                $b = new DateTime($horaFinal); 
+                $horaActual = $a;
+                
+                while($a <= $b){
+                    if (isset($datos[$cont]['hora']) && $HoraActualArray->format('H:i:s') === $horaActual->format('H:i:s')){
+                        $datosConHorasFaltantes[] = $datos[$cont];
+                
+                    }else{
+                        $datosConHorasFaltantes[] = [
+                            'fecha' => $fechaUnica,
+                            'hora' => $horaActual->format('H:i:s'),
+                            'precipitacion' => -99
+                        ];
+                    }
+                    $horaActual->modify('+1 hour');
+                    $HoraActualArray->modify('+1 hour');
+                    $cont++;
+                    
                 }
             }
+            
+            
             // Cerrar el archivo
             fclose($file);
         }else{
             echo 'No se pudo abrir el archivo.';
         }
 
-        return $datos;
+        return $datosConHorasFaltantes;
     }
 
-    public function guardarDatos($datos) {
+    public function guardarDatosDiario($datos, $estacionSeleccionada, $tipoDatoTemporal) {
         // Aquí puedes implementar la lógica para guardar los datos en la base de datos
         // Por ejemplo, podrías recorrer los datos y insertar cada fila en la base de datos
         $hora = '00:00:00';
-        $idestacion = 1;
-        $tipodatotemporal = 'diario';
+        
         foreach ($datos as $dato) {
             $fecha = $dato['fecha'];
             $precipitacion = isset($dato['precipitacion']) ? $dato['precipitacion'] : null;
@@ -203,23 +260,26 @@ class datos {
                 $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
                 (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL) 
                 VALUES (?, ?, ?, ?, ?, 'milimetros', ?)");
-                $stmt->bind_param("iissss", $idestacion, $idvarmeteorologica, $fecha, $hora, $precipitacion, $tipodatotemporal);
+                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $precipitacion, $tipoDatoTemporal);
                 $stmt->execute();
             }
         
-            if ($precipitacion === null && $tempMax !== null && $tempMin !== null) {
+            if ($precipitacion === null && $tempMax !== null && $tempMin === null) {
                 $idvarmeteorologica = 2;
                 $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
                 (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL)
                 VALUES (?, ?, ?, ?, ?, 'grados celsius', ?)");
-                $stmt->bind_param("iissis", $idestacion, $idvarmeteorologica, $fecha, $hora, $tempMax, $tipodatotemporal);
+                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMax, $tipoDatoTemporal);
                 $stmt->execute();
+            }
+
+            if ($precipitacion === null && $tempMax === null && $tempMin !== null) {
 
                 $idvarmeteorologica = 3;
                 $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
                 (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL)
                 VALUES (?, ?, ?, ?, ?, 'grados celsius', ?)");
-                $stmt->bind_param("iissis", $idestacion, $idvarmeteorologica, $fecha, $hora, $tempMin, $tipodatotemporal);
+                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMin, $tipoDatoTemporal);
                 $stmt->execute();
             }
 
@@ -228,21 +288,93 @@ class datos {
                 $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
                 (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL)
                 VALUES (?, ?, ?, ?, ?, 'milimetros', ?)");
-                $stmt->bind_param("ssssss", $idestacion, $idvarmeteorologica, $fecha, $hora, $precipitacion, $tipodatotemporal);
+                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $precipitacion, $tipoDatoTemporal);
                 $stmt->execute();
                 
                 $idvarmeteorologica = 2;
                 $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
                 (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL) 
-                VALUES (?, ?, ?, ?, ?, 'grados', ?)");
-                $stmt->bind_param("ssssss", $idestacion, $idvarmeteorologica, $fecha, $hora, $tempMax, $tipodatotemporal);
+                VALUES (?, ?, ?, ?, ?, 'grados celsius', ?)");
+                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMax, $tipoDatoTemporal);
                 $stmt->execute();
         
                 $idvarmeteorologica = 3;
                 $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
                 (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL) 
-                VALUES (?, ?, ?, ?, ?, 'grados', ?)");
-                $stmt->bind_param("ssssss", $idestacion, $idvarmeteorologica, $fecha, $hora, $tempMin, $tipodatotemporal);
+                VALUES (?, ?, ?, ?, ?, 'grados celsius', ?)");
+                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMin, $tipoDatoTemporal);
+                $stmt->execute();
+            }
+        }
+
+        // Cerrar la conexión a la base de datos cuando hayas terminado
+        $this->db->close();
+    }
+
+    public function guardarDatosHorario($datos, $estacionSeleccionada, $tipoDatoTemporal) {
+        // Aquí puedes implementar la lógica para guardar los datos en la base de datos
+        // Por ejemplo, podrías recorrer los datos y insertar cada fila en la base de datos
+        
+        
+        foreach ($datos as $dato) {
+            $fecha = $dato['fecha'];
+            $hora = $dato['hora'];
+            $precipitacion = isset($dato['precipitacion']) ? $dato['precipitacion'] : null;
+            $tempMax = isset($dato['temperatura_maxima']) ? $dato['temperatura_maxima'] : null;
+            $tempMin = isset($dato['temperatura_minima']) ? $dato['temperatura_minima'] : null;
+            
+        
+            // Preparar la consulta SQL
+            if ($precipitacion !== null && $tempMax === null && $tempMin === null) {
+                
+                $idvarmeteorologica = 1;
+
+                $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
+                (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL) 
+                VALUES (?, ?, ?, ?, ?, 'milimetros', ?)");
+                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $precipitacion, $tipoDatoTemporal);
+                $stmt->execute();
+            }
+        
+            if ($precipitacion === null && $tempMax !== null && $tempMin === null) {
+                $idvarmeteorologica = 2;
+                $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
+                (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL)
+                VALUES (?, ?, ?, ?, ?, 'grados celsius', ?)");
+                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMax, $tipoDatoTemporal);
+                $stmt->execute();
+            }
+
+            if ($precipitacion === null && $tempMax === null && $tempMin !== null) {
+
+                $idvarmeteorologica = 3;
+                $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
+                (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL)
+                VALUES (?, ?, ?, ?, ?, 'grados celsius', ?)");
+                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMin, $tipoDatoTemporal);
+                $stmt->execute();
+            }
+
+            if ($precipitacion !== null && $tempMax !== null && $tempMin !== null) {
+                $idvarmeteorologica = 1;
+                $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
+                (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL)
+                VALUES (?, ?, ?, ?, ?, 'milimetros', ?)");
+                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $precipitacion, $tipoDatoTemporal);
+                $stmt->execute();
+                
+                $idvarmeteorologica = 2;
+                $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
+                (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL) 
+                VALUES (?, ?, ?, ?, ?, 'grados celsius', ?)");
+                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMax, $tipoDatoTemporal);
+                $stmt->execute();
+        
+                $idvarmeteorologica = 3;
+                $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
+                (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL) 
+                VALUES (?, ?, ?, ?, ?, 'grados celsius', ?)");
+                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMin, $tipoDatoTemporal);
                 $stmt->execute();
             }
         }
