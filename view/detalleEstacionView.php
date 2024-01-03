@@ -9,11 +9,12 @@
 <body>
     <div id="menu-container">
         <ul>
-            <li><a href="index.php">Inicio</a></li>
+        <li><a href="index.php">Inicio</a></li>
             <li><a href="index.php?c=estacion&a=mostrarEstacion">Datos</a></li>
             <li><a href="index.php?c=grafico&a=index">Gráficas</a></li>
             <li><a href="index.php?c=estacion&a=mostrarMapa">Mapa</a></li>
-            <li><a href="index.php?c=iniciar_sesion">Iniciar Sesión</a></li>
+            <li><a href="index.php?c=datos&a=index">Subir Datos</a></li>
+            <li><a href="index.php?c=usuario&a=login">Iniciar Sesión</a></li>
         </ul>
     </div>
     <h1>Detalle de la Estación</h1>

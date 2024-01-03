@@ -1,5 +1,5 @@
 <?php
-
+require_once 'indicador.controller.php';
 // FILEPATH: /c:/wamp64/www/IEC/controller/datos.controller.php
 include('../model/datos.php');
 
@@ -26,8 +26,8 @@ class datosController {
         $idOrgResp = $_SESSION['IDORGRESP'];
         $idPersona = $_SESSION['IDPERSONA'];
         
-        $tipoDatos = $_POST['tipo-datos'];
-        $tipoVariable = $_POST['tipo-variable'];
+        $tipoDatoTemporal = $_POST['tipo-datos'];
+        $tipoVariableMeteorologica = $_POST['tipo-variable'];
         $estacion = $_POST['estacion'];
         // Verificar si se ha subido un archivo
         if (isset($_FILES['archivo']['tmp_name']) && !empty($_FILES['archivo']['tmp_name'])) {
@@ -37,33 +37,31 @@ class datosController {
             // Verificar si es un archivo CSV
             if (pathinfo($_FILES['archivo']['name'], PATHINFO_EXTENSION) === 'csv') { 
                 
-                if($tipoDatos === 'diario'){
+                if($tipoDatoTemporal === 'diario'){
                     // Procesar el archivo CSV
-                    $datos = $this->model->procesarArchivoCSVDiario($rutaTemporal, $tipoVariable, $estacion);
+                    $datos = $this->model->procesarArchivoCSVDiario($rutaTemporal, $tipoVariableMeteorologica, $estacion, $tipoDatoTemporal);
                     if ($datos === 'codigo_no_coincide'){
                         //FALTA HACER EL MODAL DE ERROR
                         header ("Location: ../public/index.php?c=datos&a=index");
                     }
                     //echo var_dump($datos);
-                    $this->model->guardarDatosDiario($datos, $estacion, $tipoVariable);
+                    $this->model->guardarDatosDiario($datos, $tipoVariableMeteorologica, $estacion, $tipoDatoTemporal);
                     echo 'Archivo CSV subido y procesado correctamente.';
-                }else if($tipoDatos === 'horario'){
+                }else if($tipoDatoTemporal === 'horario'){
                     // Procesar el archivo CSV
-                    $datos = $this->model->procesarArchivoCSVHorario($rutaTemporal, $tipoVariable, $estacion);
+                    $datos = $this->model->procesarArchivoCSVHorario($rutaTemporal, $tipoVariableMeteorologica, $estacion, $tipoDatoTemporal);
                     
                     if ($datos === 'codigo_no_coincide'){
                         //FALTA HACER EL MODAL DE ERROR
                         header ("Location: ../public/index.php?c=datos&a=index");
                     }
-                    $this->model->guardarDatosHorario($datos, $estacion, $tipoVariable);
+                    
+                    $this->model->guardarDatosHorario($datos, $tipoVariableMeteorologica, $estacion, $tipoDatoTemporal);
                     echo 'Archivo CSV subido y procesado correctamente.';
                 }   
-                
-                // Obtener la idEstacion
-                //$idEstacion = $this->model->obtenerIdEstacion($idPersona, $idOrgResp);
-                //Guardar los datos en la base de datos utilizando el modelo
-                //$this->model->guardarDatos($datos, $estacion);
-
+                // Instancia el controlador de indicadores y calcula los indicadores.
+                //$indicadorController = new indicadorController();
+                //$indicadores = $indicadorController->calcularIndicadores($estacion);
                 // Retornar una respuesta exitosa
                 return 'Archivo CSV subido y procesado correctamente.';
             } else {

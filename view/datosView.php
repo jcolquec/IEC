@@ -31,10 +31,10 @@
         <label for="tipo-variable">Tipo de Variable:</label>
         <select id="tipo-variable" name="tipo-variable">
             <option value="">Seleccione</option>
-            <option value="precipitacion">Solo precipitación</option>
-            <option value="temperatura-media">Solo temperatura media</option>
-            <option value="temperatura-maxima">Solo temperatura máxima</option>
-            <option value="temperatura-minima">Solo temperatura mínima</option>
+            <option value="precipitacion">Precipitación</option>
+            <option value="temperatura-media">Temperatura Media</option>
+            <option value="temperatura-maxima">Temperatura Máxima</option>
+            <option value="temperatura-minima">Temperatura Mínima</option>
             <option value="todas">Todas</option>
         </select>
 
