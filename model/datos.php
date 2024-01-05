@@ -68,7 +68,7 @@ class datos {
             } elseif (in_array('temperatura_maxima', $cabeceras)) {
                 // Procesar archivo de temperatura
                 // Leer cada línea del archivo
-                while (($data = fgetcsv($file)) !== false) {
+                while (($data = fgetcsv($file, 0, ';')) !== false) {
                     // Obtener cada dato por separado
                     $fecha = DateTime::createFromFormat('d-m-Y', $data[1])->format('Y-m-d');
                     $temperatura_maxima = $data[2];
@@ -96,7 +96,7 @@ class datos {
                 }
             }elseif(in_array('temperatura_minima', $cabeceras)){
 
-                while (($data = fgetcsv($file)) !== false) {
+                while (($data = fgetcsv($file, 0, ';')) !== false) {
                     // Obtener cada dato por separado
                     $fecha = DateTime::createFromFormat('d-m-Y', $data[1])->format('Y-m-d');
                     $temperatura_minima = $data[2];
@@ -123,11 +123,11 @@ class datos {
                     }
                 }
             }elseif(in_array('temperatura_media', $cabeceras)){
-
-                while (($data = fgetcsv($file)) !== false) {
+                
+                while (($data = fgetcsv($file, 0, ';')) !== false) {
                     // Obtener cada dato por separado
                     $fecha = DateTime::createFromFormat('d-m-Y', $data[1])->format('Y-m-d');
-                    $temperatura_minima = $data[2];
+                    $temperatura_media = $data[2];
                     
                     $datos[] = [
                         'fecha' => $fecha,
@@ -147,7 +147,7 @@ class datos {
                     $fechaActual->modify('+1 day');
                     if ($fechaActual != $fechaSiguiente) {
                         // Si no lo es, insertar una nueva entrada en el array
-                        array_splice($datos, $i + 1, 0, [['fecha' => $fechaActual->format('Y-m-d'), 'precipitacion' => '-99']]);
+                        array_splice($datos, $i + 1, 0, [['fecha' => $fechaActual->format('Y-m-d'), 'temperatura_media' => '-99']]);
                     }
                 }
             
@@ -155,7 +155,7 @@ class datos {
                 // Procesar archivo de temperatura y precipitación
                 $firstLine = true;
                 // Leer cada línea del archivo
-                while (($data = fgetcsv($file)) !== false) {
+                while (($data = fgetcsv($file, 0, ';')) !== false) {
             
                     $fecha = DateTime::createFromFormat('d-m-Y', $data[1])->format('Y-m-d');
                     
@@ -245,7 +245,7 @@ class datos {
             } elseif (in_array('temperatura_maxima', $cabeceras) && in_array('temperatura_minima', $cabeceras)) {
                 // Procesar archivo de temperatura
                 // Leer cada línea del archivo
-                while (($data = fgetcsv($file)) !== false) {
+                while (($data = fgetcsv($file, 0, ';')) !== false) {
                     // Obtener cada dato por separado
                     $fecha = $data[0];
                     $temperatura_maxima = $data[1];
@@ -261,7 +261,7 @@ class datos {
                 // Procesar archivo de temperatura y precipitación
                 $firstLine = true;
                 // Leer cada línea del archivo
-                while (($data = fgetcsv($file)) !== false) {
+                while (($data = fgetcsv($file, 0, ';')) !== false) {
             
                     $fecha = $data[0] ;
                     
@@ -338,7 +338,7 @@ class datos {
     public function guardarDatosDiario($datos, $tipoVariableMeteorologica, $estacionSeleccionada, $tipoDatoTemporal) {
         // Aquí puedes implementar la lógica para guardar los datos en la base de datos
         // Por ejemplo, podrías recorrer los datos y insertar cada fila en la base de datos
-        $hora = '00:00:00';
+        $hora = '23:59:59';
         
         foreach ($datos as $dato) {
             $fecha = $dato['fecha'];
@@ -349,56 +349,65 @@ class datos {
             
         
             // Preparar la consulta SQL
-            if ($precipitacion !== null && $tempMax === null && $tempMin === null) {
+            if ($precipitacion !== null && $tempMax === null && $tempMin === null && $tempMed === null) {
                 
                 $idvarmeteorologica = 1;
 
                 $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
                 (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL) 
                 VALUES (?, ?, ?, ?, ?, 'milimetros', ?)");
-                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $precipitacion, $tipoDatoTemporal);
+                $stmt->bind_param("sissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $precipitacion, $tipoDatoTemporal);
                 $stmt->execute();
             }
         
-            if ($precipitacion === null && $tempMax !== null && $tempMin === null) {
+            if ($precipitacion === null && $tempMax !== null && $tempMin === null && $tempMed === null) {
                 $idvarmeteorologica = 2;
                 $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
                 (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL)
                 VALUES (?, ?, ?, ?, ?, 'grados celsius', ?)");
-                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMax, $tipoDatoTemporal);
+                $stmt->bind_param("sissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMax, $tipoDatoTemporal);
                 $stmt->execute();
             }
 
-            if ($precipitacion === null && $tempMax === null && $tempMin !== null) {
+            if ($precipitacion === null && $tempMax === null && $tempMin !== null && $tempMed === null) {
 
                 $idvarmeteorologica = 3;
                 $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
                 (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL)
                 VALUES (?, ?, ?, ?, ?, 'grados celsius', ?)");
-                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMin, $tipoDatoTemporal);
+                $stmt->bind_param("sissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMin, $tipoDatoTemporal);
                 $stmt->execute();
             }
 
-            if ($precipitacion !== null && $tempMax !== null && $tempMin !== null) {
+            if ($precipitacion === null && $tempMax === null && $tempMin === null && $tempMed !== null){
+                $idvarmeteorologica = 4;
+                $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
+                (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL)
+                VALUES (?, ?, ?, ?, ?, 'grados celsius', ?)");
+                $stmt->bind_param("sissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMed, $tipoDatoTemporal);
+                $stmt->execute();
+            }
+
+            if ($precipitacion !== null && $tempMax !== null && $tempMin !== null && $tempMed !== null) {
                 $idvarmeteorologica = 1;
                 $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
                 (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL)
                 VALUES (?, ?, ?, ?, ?, 'milimetros', ?)");
-                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $precipitacion, $tipoDatoTemporal);
+                $stmt->bind_param("sissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $precipitacion, $tipoDatoTemporal);
                 $stmt->execute();
                 
                 $idvarmeteorologica = 2;
                 $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
                 (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL) 
                 VALUES (?, ?, ?, ?, ?, 'grados celsius', ?)");
-                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMax, $tipoDatoTemporal);
+                $stmt->bind_param("sissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMax, $tipoDatoTemporal);
                 $stmt->execute();
         
                 $idvarmeteorologica = 3;
                 $stmt = $this->db->prepare("INSERT INTO estacion_registra_variable 
                 (IDESTACION, IDVARMETEOROLOGICA, FECHA, HORA, VALORVARIABLE, UNIDMEDIDA, TIPODATOTEMPORAL) 
                 VALUES (?, ?, ?, ?, ?, 'grados celsius', ?)");
-                $stmt->bind_param("iissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMin, $tipoDatoTemporal);
+                $stmt->bind_param("sissds", $estacionSeleccionada, $idvarmeteorologica, $fecha, $hora, $tempMin, $tipoDatoTemporal);
                 $stmt->execute();
             }
         }

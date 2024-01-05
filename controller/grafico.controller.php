@@ -1,7 +1,6 @@
 <?php
 include('../model/grafico.php');
 
-
 class graficoController {
     private $model;
 
@@ -14,6 +13,7 @@ class graficoController {
         session_start();
         $idorgresp = $_SESSION['IDORGRESP'];
         $idpersona = $_SESSION['IDPERSONA'];
+        
         $data = $this->model->mostrarGrafico($idpersona, $idorgresp);
         
         // Llama a la vista para renderizar la página.

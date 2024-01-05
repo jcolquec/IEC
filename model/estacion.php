@@ -40,7 +40,9 @@ class estacion {
         
         $detalles = array();
 
-        $sql = "SELECT * FROM ESTACION where IDESTACION = $estacionId";
+        $sql = "SELECT * FROM ESTACION E
+                INNER JOIN GEOGRAFIA G ON E.IDESTACION = G.IDESTACION 
+                WHERE E.IDESTACION = $estacionId";
     
     
         $result = $this->db->query($sql);
@@ -52,7 +54,6 @@ class estacion {
         }
         // Cierra la conexión a la base de datos.
         $this->db->close();
-    
         return $detalles;
     }
     public function obtenerUbicacionEstaciones($idpersona, $idorgresp){

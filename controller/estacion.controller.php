@@ -42,8 +42,8 @@
                 
                 // Debes incluir el código para obtener los detalles de la estación desde el modelo.
                 // Reemplaza esto con tu lógica de modelo real.
+                
                 $detalles = $model->obtenerDetalleEstacion($estacionId);
-    
                 // Renderiza una vista para mostrar los detalles.
                 include ('../view/detalleEstacionView.php');
             }

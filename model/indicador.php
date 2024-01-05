@@ -7,15 +7,17 @@ class indicador {
         $database = new Database();
         $this->db = $database->getDB();
     }
-    public function obtenerDatosDiarios() {
+    public function obtenerDatosDiarios($estacion, $tipoVariableMeteorologica) {
         // Código para obtener los datos diarios (por ejemplo, consulta a la base de datos).
         // ...
         $datosDiarios = array();
 
         // Realiza una consulta SQL para obtener los datos necesarios.
-        $sql = "SELECT FECHA, TMED, TMIN, TMAX, PP
-                FROM VARIABLE_METEOROLOGICA 
-                GROUP BY FECHA;";
+        $sql = "SELECT FECHA, NOMBREVAR AS NOMBRE, VALORVARIABLE AS VALOR FROM ESTACION_REGISTRA_VARIABLE EVM
+                INNER JOIN VARIABLE_METEOROLOGICA V ON EVM.IDVARMETEOROLOGICA = V.IDVARMETEOROLOGICA
+                WHERE TIPODATOTEMPORAL = 'diario' and IDESTACION = $estacion and NOMBREVAR = '$tipoVariableMeteorologica'
+                ORDER BY FECHA;"
+                ;
 
         // Ejecutar la consulta y obtener los resultados en un arreglo
         $result = $this->db->query($sql);
@@ -37,7 +39,8 @@ class indicador {
 
         foreach ($datosDiarios as $dato) {
             $ano = date('Y', strtotime($dato['FECHA']));
-
+            
+            
             if (!isset($datosPorAno[$ano])) {
                 $datosPorAno[$ano] = array(
                     'ano' => $ano,
@@ -52,15 +55,14 @@ class indicador {
                     'TNN' => INF,
                 );
             }
-
+            
             $datosPorAno[$ano]['datos'][] = array(
-                'TMED' => $dato['TMED'],
-                'TMAX' => $dato['TMAX'],
-                'TMIN' => $dato['TMIN'],
-                'PP' => $dato['PP'],
+                
+                'TMED' => $dato['VALOR'],
                 // Agrega otras variables meteorológicas según sea necesario.
             );
-
+            //echo var_dump($datosPorAno[$ano]['datos']);
+            
             // Lógica específica para calcular los indicadores (usando tu ejemplo FD y SU).
             $datoAnual = end($datosPorAno[$ano]['datos']); // Obtiene el último dato añadido para el año actual.
 
@@ -83,15 +85,17 @@ class indicador {
             $datosPorAno[$ano]['TNX'] = max($datosPorAno[$ano]['TNX'] ,$dato['TMIN']);
             $datosPorAno[$ano]['TXN'] = min($datosPorAno[$ano]['TXN'] ,$dato['TMAX']);
             $datosPorAno[$ano]['TNN'] = min($datosPorAno[$ano]['TNN'] ,$dato['TMIN']);
+            
         }
         
-        $datosPorAno[$ano]['TNX'] !== -INF ? $datosPorAno[$ano]['TNX'] : null;
+        //$datosPorAno[$ano]['TNX'] !== -INF ? $datosPorAno[$ano]['TNX'] : null;
 
         // Al final, tendrás una lista que contiene el año y los indicadores de ese año.
-        $resultadosIndicadorAnual = array_values($datosPorAno);
+        //$resultadosIndicadorAnual = array_values($datosPorAno);
         
-        echo var_dump($resultadosIndicadorAnual);
-        return $resultadosIndicadorAnual;
+        //echo var_dump($resultadosIndicadorAnual);
+        
+        //return $resultadosIndicadorAnual;
     }
 
     // Función para guardar los resultados en la base de datos.

@@ -44,9 +44,9 @@ class datosController {
                         //FALTA HACER EL MODAL DE ERROR
                         header ("Location: ../public/index.php?c=datos&a=index");
                     }
-                    //echo var_dump($datos);
+                    
                     $this->model->guardarDatosDiario($datos, $tipoVariableMeteorologica, $estacion, $tipoDatoTemporal);
-                    echo 'Archivo CSV subido y procesado correctamente.';
+                    echo 'Archivo CSV subido y procesado correctamente.'."<br>";
                 }else if($tipoDatoTemporal === 'horario'){
                     // Procesar el archivo CSV
                     $datos = $this->model->procesarArchivoCSVHorario($rutaTemporal, $tipoVariableMeteorologica, $estacion, $tipoDatoTemporal);
@@ -57,13 +57,13 @@ class datosController {
                     }
                     
                     $this->model->guardarDatosHorario($datos, $tipoVariableMeteorologica, $estacion, $tipoDatoTemporal);
-                    echo 'Archivo CSV subido y procesado correctamente.';
+                    echo 'Archivo CSV subido y procesado correctamente.'."<br>";
                 }   
                 // Instancia el controlador de indicadores y calcula los indicadores.
-                //$indicadorController = new indicadorController();
-                //$indicadores = $indicadorController->calcularIndicadores($estacion);
+                $indicadorController = new indicadorController();
+                $indicadores = $indicadorController->calcularIndicadores($estacion, $tipoVariableMeteorologica);
                 // Retornar una respuesta exitosa
-                return 'Archivo CSV subido y procesado correctamente.';
+                return 'Archivo CSV subido y procesado correctamente.'."<br>";
             } else {
                 // Retornar un mensaje de error si el archivo no es un CSV
                 return 'El archivo debe ser de tipo CSV.';

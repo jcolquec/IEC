@@ -5,31 +5,9 @@
     <link rel="stylesheet" type="text/css" href="../css/inicio.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/grafico.css">
 </head>
-<style>
-        body,html{
-            background-color: #fffff;
-        }
 
-        .contenedor {
-            display: flex;
-            height: 100%;
-        }
-
-        .grafico {
-            flex: 1;
-            margin-right: 10px; /* Agregamos un margen derecho para separar el gráfico del mapa */
-        }
-
-        .contenido-derecha {
-            flex: 1;
-            
-        }
-        .mapa{
-            height: 500px;
-        }
-        
-    </style>
 <body>
 
     <div id="menu-container">
@@ -89,10 +67,9 @@
         </div> 
         
         <div class="contenido-derecha">
-            <!-- Contenido adicional a la derecha del gráfico -->
-            <!-- Puedes agregar otros elementos, texto, gráficos, etc. aquí -->
+
             <h2>Mapa de Estaciones Meteorológicas</h2>
-            <?php// echo var_dump($data);?>
+            
             <select name="select-location" id="select-location">
                 <option value="-1">Seleccione un lugar:</option>
                 <?php
@@ -166,9 +143,9 @@
         // Datos obtenidos del controlador
         var chartData = <?php echo json_encode($data); ?>;
     </script>
-    </script>
     
-    </script>
+    
+    
     <script src="js/grafico.js"></script>
 </body>
 </html>

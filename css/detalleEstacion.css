@@ -63,3 +63,20 @@ p.no-detalles {
     font-style: italic;
     color: #777;
 }
+
+.column {
+    float: left;
+    width: 50%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+#map{
+    margin-top: 75px;
+    width: 90%;
+}

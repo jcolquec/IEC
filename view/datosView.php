@@ -4,6 +4,9 @@
     <title>Carga de Datos</title>
     <link rel="stylesheet" type="text/css" href="../css/inicio.css">
     <link rel="stylesheet" type="text/css" href="../css/datosView.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     
 </head>
 <body>
@@ -31,60 +34,46 @@
         <label for="tipo-variable">Tipo de Variable:</label>
         <select id="tipo-variable" name="tipo-variable">
             <option value="">Seleccione</option>
-            <option value="precipitacion">Precipitación</option>
-            <option value="temperatura-media">Temperatura Media</option>
-            <option value="temperatura-maxima">Temperatura Máxima</option>
-            <option value="temperatura-minima">Temperatura Mínima</option>
+            <option value="Precipitación">Precipitación</option>
+            <option value="Temperatura Media">Temperatura Media</option>
+            <option value="Temperatura Máxima">Temperatura Máxima</option>
+            <option value="Temperatura Mínima">Temperatura Mínima</option>
             <option value="todas">Todas</option>
         </select>
 
-        <label for="estacion">Indique el Código de la Estación donde se van a cargar los datos:</label>
-        <select id="estacion" name="estacion">
-            <option value="">Seleccione</option>
-            <?php foreach ($estaciones as $estacion): ?>
-                <option value="<?= $estacion['IDESTACION'] ?>"><?= $estacion['IDESTACION'] ?></option>
-            <?php endforeach; ?>
-        </select>
+        <div class="estacion-container">
+            <label for="estacion">Indique Código de la Estación :</label>
+            <select id="estacion" name="estacion">
+                <option value="">Seleccione</option>
+                <?php foreach ($estaciones as $estacion): ?>
+                    <option value="<?= $estacion['IDESTACION'] ?>"><?= $estacion['IDESTACION'] ?></option>
+                <?php endforeach; ?>
+            </select>
+            <a id="detalle-estacion" href="#" class="btn detalle-btn">Ver Detalle</a>
+        </div>
 
         <label for="archivo">Selecciona un archivo CSV:</label>
         <input type="file" id="archivo" name="archivo" accept=".csv">
         <input type="submit" value="Subir archivo" name="submit">
-    </form>
-    <!--
-    <form id="form-subir-datos" action="../public/index.php?c=datos&a=subirArchivoCSV" method="post" enctype="multipart/form-data">
-        <h2>Subir datos de precipitación</h2>
-        <label for="archivo">Selecciona un archivo CSV:</label>
-        <input type="file" id="archivo" name="archivo" accept=".csv">
-        <input type="submit" value="Subir archivo" name="submit">
+        
     </form>
 
-    <form id="form-subir-datos" action="../public/index.php?c=datos&a=subirArchivoCSV" method="post" enctype="multipart/form-data">
-        <h2>Subir datos de Temperatura Media</h2>
-        <label for="archivo">Selecciona un archivo CSV:</label>
-        <input type="file" id="archivo" name="archivo" accept=".csv">
-        <input type="submit" value="Subir archivo" name="submit">
-    </form>
+    <script>
+        $(document).ready(function() {
+            $('#estacion').select2();
 
-    <form id="form-subir-datos" action="../public/index.php?c=datos&a=subirArchivoCSV" method="post" enctype="multipart/form-data">
-        <h2>Subir datos de Temperatura Máxima</h2>
-        <label for="archivo">Selecciona un archivo CSV:</label>
-        <input type="file" id="archivo" name="archivo" accept=".csv">
-        <input type="submit" value="Subir archivo" name="submit">
-    </form>
+            $('#estacion').change(function() {
+                var estacion = $(this).val();
+                var enlace = $('#detalle-estacion');
+                if (estacion) {
+                    enlace.attr('href', 'index.php?c=estacion&a=verDetalle&id=' + estacion);
+                } else {
+                    enlace.attr('href', '#');
+                }
+            });
+        });
 
-    <form id="form-subir-datos" action="../public/index.php?c=datos&a=subirArchivoCSV" method="post" enctype="multipart/form-data">
-        <h2>Subir datos de Temperatura Mínima</h2>
-        <label for="archivo">Selecciona un archivo CSV:</label>
-        <input type="file" id="archivo" name="archivo" accept=".csv">
-        <input type="submit" value="Subir archivo" name="submit">
-    </form>
-
-    <form id="form-subir-datos" action="../public/index.php?c=datos&a=subirArchivoCSV" method="post" enctype="multipart/form-data">
-        <h2>Subir archivo de temperatura y precipitación</h2>
-        <label for="archivo">Selecciona un archivo CSV:</label>
-        <input type="file" id="archivo" name="archivo" accept=".csv">
-        <input type="submit" value="Subir archivo" name="submit">
-    </form>
-    -->
+        
+    </script>
 </body>
 </html>

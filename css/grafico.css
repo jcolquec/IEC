@@ -1,0 +1,21 @@
+body,html{
+    background-color: #ffffff;
+}
+
+.contenedor {
+    display: flex;
+    height: 100%;
+}
+
+.grafico {
+    flex: 1;
+    margin-right: 10px; /* Agregamos un margen derecho para separar el gráfico del mapa */
+}
+
+.contenido-derecha {
+    flex: 1;
+    
+}
+.mapa{
+    height: 500px;
+}
