@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/7.5.0/simple-statistics.min.js"></script>
     <meta charset="UTF-8">
 </head>
 <body>
@@ -120,21 +121,24 @@
             </div>
         </div> 
     
-
         <div id="filtro-grafico">
             <div id="filtro">
-            <label for="fechaInicio">Desde:</label>
-            <input type="date" id="fechaInicio">
+                <label for="fechaInicio">Desde:</label>
+                <input type="date" id="fechaInicio">
 
-            <label for="fechaFin">Hasta:</label>
-            <input type="date" id="fechaFin">
+                <label for="fechaFin">Hasta:</label>
+                <input type="date" id="fechaFin">
 
-            <button id="filtrar">Filtrar</button>
+                <button id="filtrar">Filtrar</button>
             </div>
-            <div id="grafico">
-            <canvas id="myChart"></canvas>
+            <div id="contenedor-2">
+                <div id="grafico">
+                    <canvas id="myChart"></canvas>
+                </div>
+                <div id="estadisticas"></div>
             </div>
-        </div>  
+        </div> 
+
     </div>  
             <script>
                     var ctx = document.getElementById('myChart').getContext('2d');
@@ -157,7 +161,7 @@
 
                         i++;
                     }
-
+                    // Crea el gráfico
                     var myChart = new Chart(ctx, {
                         type: 'line',
                         data: {
@@ -173,6 +177,7 @@
                         }
                     });
 
+                    // Filtra los datos y actualiza el gráfico
                     document.getElementById('filtrar').addEventListener('click', function() {
                         var fechaInicio = new Date(document.getElementById('fechaInicio').value);
                         var fechaFin = new Date(document.getElementById('fechaFin').value);
@@ -205,6 +210,54 @@
                         myChart.data.labels = datosFiltrados.map(function(dato) { return dato.FECHA; });
                         myChart.data.datasets = datasets;
                         myChart.update();
+                    });
+
+
+                    // Genera una tabla con estadísticas descriptivas
+                    function generarTablaEstadisticas(datosGrafico) {
+                        console.log(datosGrafico);
+                        var tabla = document.createElement('table');
+                        var thead = document.createElement('thead');
+                        var tbody = document.createElement('tbody');
+
+                        // Añade las cabeceras de la tabla
+                        var cabeceras = ['Variable', 'Media', 'Mediana', 'Desviación estándar', 'Mínimo', 'Máximo'];
+                        var tr = document.createElement('tr');
+                        cabeceras.forEach(function(cabecera) {
+                            var th = document.createElement('th');
+                            th.textContent = cabecera;
+                            tr.appendChild(th);
+                        });
+                        thead.appendChild(tr);
+                        tabla.appendChild(thead);
+
+                        // Añade las estadísticas descriptivas para cada variable
+                        for (var nombreVariable in datosGrafico) {
+                            var datosVariable = datosGrafico[nombreVariable].map(function(dato) { return parseFloat(dato.VALOR); });
+                            var tr = document.createElement('tr');
+
+                            var td = document.createElement('td');
+                            td.textContent = nombreVariable;
+                            tr.appendChild(td);
+
+                            ['mean', 'median', 'standardDeviation', 'min', 'max'].forEach(function(estadistica) {
+                                var td = document.createElement('td');
+                                td.textContent = ss[estadistica](datosVariable).toFixed(2);
+                                tr.appendChild(td);
+                            });
+
+                            tbody.appendChild(tr);
+                        }
+                        tabla.appendChild(tbody);
+
+                        // Añade la tabla al documento
+                        document.getElementById('estadisticas').appendChild(tabla);
+                    }
+
+                    // Genera la tabla cuando se carga la página
+                    window.addEventListener('load', function() {
+                        var datosGrafico = <?php echo json_encode($datosGrafico); ?>;
+                        generarTablaEstadisticas(datosGrafico);
                     });
             </script>
 </body>

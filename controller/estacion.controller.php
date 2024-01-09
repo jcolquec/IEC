@@ -42,7 +42,7 @@
                 
                 $detalles = $model->obtenerDetalleEstacion($estacionId);
                 $datosGrafico = $model->obtenerDatosVariableMeteorologica($estacionId);
-                echo var_dump($datosGrafico);
+                
                 // Renderiza una vista para mostrar los detalles.
                 include ('../view/detalleEstacionView.php');
             }

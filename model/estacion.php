@@ -102,18 +102,20 @@ class estacion {
 
         if ($result) {
             while ($row = $result->fetch_assoc()) {
-                if (!array_key_exists($row['NOMBRE'], $datosGrafico)) {
-                    $datosGrafico[$row['NOMBRE']] = array();
+                if ($row['VALOR'] != -99) {
+                    if (!array_key_exists($row['NOMBRE'], $datosGrafico)) {
+                        $datosGrafico[$row['NOMBRE']] = array();
+                    }
+                    $datosGrafico[$row['NOMBRE']][] = $row;
                 }
-                $datosGrafico[$row['NOMBRE']][] = $row;
+                
             }
         }
-    
         
         // Cierra la conexión a la base de datos.
         $stmt->close();
         $this->db->close();
-    
+
         return $datosGrafico;
     }
 }
