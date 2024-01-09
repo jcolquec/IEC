@@ -40,10 +40,9 @@
                 // Instanciar el modelo
                 $model = new estacion();
                 
-                // Debes incluir el código para obtener los detalles de la estación desde el modelo.
-                // Reemplaza esto con tu lógica de modelo real.
-                
                 $detalles = $model->obtenerDetalleEstacion($estacionId);
+                $datosGrafico = $model->obtenerDatosVariableMeteorologica($estacionId);
+                echo var_dump($datosGrafico);
                 // Renderiza una vista para mostrar los detalles.
                 include ('../view/detalleEstacionView.php');
             }

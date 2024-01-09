@@ -6,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="../css/detalleEstacion.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta charset="UTF-8">
 </head>
 <body>
@@ -19,8 +20,8 @@
             <li><a href="index.php?c=usuario&a=login">Iniciar Sesión</a></li>
         </ul>
     </div>
-    
-        <div class="column">
+    <div id="contenedor">
+        <div id="tabla">
             <h1>Detalle de la Estación</h1>
             <table>
                 <tr>
@@ -91,7 +92,7 @@
                 ?>
             </table>
         </div>  
-        <div class="column">  
+        <div id="mapa">  
             <div id="map" style="height: 400px;">
             
                 <script>
@@ -110,37 +111,101 @@
                         maxZoom: 19,
                     }).addTo(map);
                     
-                    // Recorre las estaciones y agrega marcadores
-                    estaciones.forEach(function(estaciones) {
-                        var latitud = estaciones.LATITUD;
-                        var longitud = estaciones.LONGITUD;
-                        var nombre = estaciones.NOMBREESTACION;
-                        var estado = estaciones.ESTADOESTACION;
-                        var codigo = estaciones.CODIGOESTACION;
-                        var fecha_inicio_actividades = new Date(estaciones.FECHAINIACT);
-                        var huso_horario = estaciones.HUSOHORARIO;
-                        var nro_serie = estaciones.NROSERIE;
-                        var altitud = estaciones.ALTITUD;
-
-                        var contenidoPopup = `
-                                            <h3>Nombre Estación: ${nombre}</h3>
-                                            <p>Número de Serie: ${nro_serie}</p>
-                                            <p>Código de Estación: ${codigo}</p>
-                                            <p>Fecha Inicio de Actividades: ${fecha_inicio_actividades.toLocaleDateString()}</p>
-                                            <p>Huso Horario: ${huso_horario}</p>
-                                            <p>Latitud: ${latitud}</p>
-                                            <p>Longitud: ${longitud}</p>
-                                            <p>Altitud: ${altitud}</p>
-                                            `;
-
-                        var marcador = L.marker([latitud, longitud]).bindPopup(contenidoPopup) // Contenido del popup
-                                        .addTo(map);
-                    });
+                    // Agrega un marcador
+                    var marker = L.marker([latitud, longitud]).addTo(map);
+                    
                     
                     
                 </script>
             </div>
-        </div>    
+        </div> 
     
+
+        <div id="filtro-grafico">
+            <div id="filtro">
+            <label for="fechaInicio">Desde:</label>
+            <input type="date" id="fechaInicio">
+
+            <label for="fechaFin">Hasta:</label>
+            <input type="date" id="fechaFin">
+
+            <button id="filtrar">Filtrar</button>
+            </div>
+            <div id="grafico">
+            <canvas id="myChart"></canvas>
+            </div>
+        </div>  
+    </div>  
+            <script>
+                    var ctx = document.getElementById('myChart').getContext('2d');
+                    var datosGrafico = <?php echo json_encode($datosGrafico); ?>;
+                    var datasets = [];
+
+                    var colores = ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'];
+                    var i = 0;
+
+                    // Crea un conjunto de datos para cada variable
+                    for (var nombreVariable in datosGrafico) {
+                        var datosVariable = datosGrafico[nombreVariable];
+                        datasets.push({
+                            label: nombreVariable,
+                            data: datosVariable.map(function(dato) { return dato.VALOR; }),
+                            backgroundColor: 'rgba(0, 0, 0, 0)',
+                            borderColor: colores[i % colores.length],
+                            borderWidth: 1
+                        });
+
+                        i++;
+                    }
+
+                    var myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: datosGrafico[Object.keys(datosGrafico)[0]].map(function(dato) { return dato.FECHA; }),
+                            datasets: datasets
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+
+                    document.getElementById('filtrar').addEventListener('click', function() {
+                        var fechaInicio = new Date(document.getElementById('fechaInicio').value);
+                        var fechaFin = new Date(document.getElementById('fechaFin').value);
+
+                        var datosGrafico = <?php echo json_encode($datosGrafico); ?>;
+                        var datasets = [];
+                        
+                        var colores = ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'];
+                        var i = 0;
+
+                        // Filtra los datos para cada variable
+                        for (var nombreVariable in datosGrafico) {
+                            var datosVariable = datosGrafico[nombreVariable];
+                            var datosFiltrados = datosVariable.filter(function(dato) {
+                                var fechaDato = new Date(dato.FECHA);
+                                return fechaDato >= fechaInicio && fechaDato <= fechaFin;
+                            });
+
+                            datasets.push({
+                                label: nombreVariable,
+                                data: datosFiltrados.map(function(dato) { return dato.VALOR; }),
+                                backgroundColor: 'rgba(0, 0, 0, 0)',
+                                borderColor: colores[i % colores.length],
+                                borderWidth: 1
+                            });
+
+                            i++;
+                        }
+
+                        myChart.data.labels = datosFiltrados.map(function(dato) { return dato.FECHA; });
+                        myChart.data.datasets = datasets;
+                        myChart.update();
+                    });
+            </script>
 </body>
 </html>

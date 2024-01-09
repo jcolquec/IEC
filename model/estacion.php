@@ -53,7 +53,7 @@ class estacion {
             }
         }
         // Cierra la conexión a la base de datos.
-        $this->db->close();
+        //$this->db->close();
         return $detalles;
     }
     public function obtenerUbicacionEstaciones($idpersona, $idorgresp){
@@ -84,5 +84,36 @@ class estacion {
         $this->db->close();
     
         return $ubicacion;
+    }
+    public function obtenerDatosVariableMeteorologica($estacionId){
+        
+        $datosGrafico = array();
+
+        
+        $stmt = $this->db->prepare("SELECT E.VALORVARIABLE AS VALOR, E.FECHA, E.UNIDMEDIDA AS UNIDAD, V.NOMBREVAR AS NOMBRE FROM ESTACION_REGISTRA_VARIABLE E
+        INNER JOIN VARIABLE_METEOROLOGICA V ON E.IDVARMETEOROLOGICA = V.IDVARMETEOROLOGICA
+        WHERE IDESTACION = ? ");
+    
+        $stmt->bind_param('s', $estacionId);
+        
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                if (!array_key_exists($row['NOMBRE'], $datosGrafico)) {
+                    $datosGrafico[$row['NOMBRE']] = array();
+                }
+                $datosGrafico[$row['NOMBRE']][] = $row;
+            }
+        }
+    
+        
+        // Cierra la conexión a la base de datos.
+        $stmt->close();
+        $this->db->close();
+    
+        return $datosGrafico;
     }
 }
